@@ -1,1 +1,20 @@
-  
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t ajaymaddinani/react-test -f ./client/Dockerfile.dev .
+
+script:
+  - docker run ajaymaddinani/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t ajaymaddinani/multi-client ./client
+  - docker build -t ajaymaddinani/multi-server ./server
+  - docker build -t ajaymaddinani/multi-nginx ./nginx
+  - docker build -t ajaymaddinani/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push  ajaymaddinani/multi-client
+  - docker push  ajaymaddinani/multi-server
+  - docker push  ajaymaddinani/multi-nginx
+  - docker push  ajaymaddinani/multi-worker
